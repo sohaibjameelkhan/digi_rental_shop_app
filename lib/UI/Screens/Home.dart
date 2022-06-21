@@ -1,5 +1,6 @@
-// ignore_for_file: prefer_const_constructors, avoid_print
+// ignore_for_file: prefer_const_constructors, avoid_print, prefer_const_literals_to_create_immutables
 
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/svg.dart';
@@ -11,13 +12,54 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../../Utils/Colors.dart';
 import '../../Utils/res.dart';
 
-class Home extends StatelessWidget {
+class Home extends StatefulWidget {
   const Home(
       {Key? key,
       menuScreenContext,
       bool? hideStatus,
       Null Function()? onScreenHideButtonPressed})
       : super(key: key);
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  final Color leftBarColor = Colors.green;
+
+  final Color rightBarColor = Color(0xffF89673);
+  final double width = 10;
+
+  late List<BarChartGroupData> rawBarGroups;
+  late List<BarChartGroupData> showingBarGroups;
+
+  int touchedGroupIndex = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    final barGroup1 = makeGroupData(0, 5, 12);
+    final barGroup2 = makeGroupData(1, 16, 12);
+    final barGroup3 = makeGroupData(2, 18, 5);
+    final barGroup4 = makeGroupData(3, 20, 16);
+    final barGroup5 = makeGroupData(4, 17, 6);
+    final barGroup6 = makeGroupData(5, 19, 1.5);
+    final barGroup7 = makeGroupData(6, 10, 1.5);
+
+    final items = [
+      barGroup1,
+      barGroup2,
+      barGroup3,
+      barGroup4,
+      barGroup5,
+      barGroup6,
+      barGroup7,
+    ];
+
+    rawBarGroups = items;
+
+    showingBarGroups = rawBarGroups;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,44 +99,13 @@ class Home extends StatelessWidget {
                         leftTxt: 'Response time',
                         rightTxt: '1 Hour',
                         rightTxtClr: MyAppColors.appColor),
-                    const SizedBox(height: 20),
-                    Row(
-                      //mainAxisAlignment: MainAxisAlignment.center,
-                   //   crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex:2,
-                          child: circularProgressWithTitle(
-                              filledPercentText: 97,
-                              titleText: 'Response \n Rate'),
-                        ),
-                        Expanded(
-                          flex:2,
-                          child: circularProgressWithTitle(
-                              filledPercentText: 75,
-                              titleText: 'Order \n completion'),
-                        ),
-                        Expanded(
-                          flex:2,
-                          child: circularProgressWithTitle(
-                              filledPercentText: 75,
-                              titleText: 'On-time \n delivery'),
-                        ),
-                        Expanded(
-                          flex:2,
-                          child: circularProgressWithTitle(
-                              filledPercentText: 75,
-                              titleText: 'Positive \n Rating'),
-                        ),
-
-                      ],
+                    SizedBox(
+                      height: 15,
                     ),
-                    const SizedBox(height: 15),
                     const Divider(
                       color: Colors.grey,
                     ),
                     ExpansionTile(
-
                       trailing: Icon(
                         Icons.keyboard_arrow_down_sharp,
                         color: MyAppColors.whitecolor,
@@ -119,7 +130,7 @@ class Home extends StatelessWidget {
                             child: const Text(
                               'Complete at least 60 days as a New Seller',
                               style:
-                                  TextStyle(fontSize: 13, color: Colors.grey),
+                              TextStyle(fontSize: 13, color: Colors.grey),
                             )),
                         const SizedBox(height: 10),
                         const Divider(color: Colors.grey),
@@ -133,9 +144,9 @@ class Home extends StatelessWidget {
                             child: const Text(
                               'Recievce and complete at least 10 orders (all time)',
                               style:
-                                  TextStyle(fontSize: 13, color: Colors.grey),
+                              TextStyle(fontSize: 13, color: Colors.grey),
                             )),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 5),
                         const Divider(color: Colors.grey),
                         rowTxt(
                             leftTxt: 'Earnings',
@@ -147,7 +158,7 @@ class Home extends StatelessWidget {
                             child: const Text(
                               'Earn at least \$400 from completed orders (all time)',
                               style:
-                                  TextStyle(fontSize: 13, color: Colors.grey),
+                              TextStyle(fontSize: 13, color: Colors.grey),
                             )),
                         const SizedBox(height: 10),
                         const Divider(color: Colors.grey),
@@ -161,104 +172,509 @@ class Home extends StatelessWidget {
                             child: const Text(
                               'Avoid recieving warnings for TOS ciolations over the course of 30',
                               style:
-                                  TextStyle(fontSize: 13, color: Colors.grey),
+                              TextStyle(fontSize: 13, color: Colors.grey),
                             )),
                         const SizedBox(height: 10),
                       ],
                     ),
+                    const Divider(
+                      color: Colors.grey,
+                    ),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Last 7 days',
+                            style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      height: 170,
+                      width: double.infinity,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        child: BarChart(
+                          BarChartData(
+                            maxY: 35,
+                            barTouchData: BarTouchData(
+                                touchTooltipData: BarTouchTooltipData(
+                                  tooltipBgColor: Colors.grey,
+                                  getTooltipItem: (_a, _b, _c, _d) => null,
+                                ),
+                                touchCallback: (FlTouchEvent event, response) {
+                                  if (response == null ||
+                                      response.spot == null) {
+                                    setState(() {
+                                      touchedGroupIndex = -1;
+                                      showingBarGroups = List.of(rawBarGroups);
+                                    });
+                                    return;
+                                  }
+
+                                  touchedGroupIndex =
+                                      response.spot!.touchedBarGroupIndex;
+
+                                  setState(() {
+                                    if (!event.isInterestedForInteractions) {
+                                      touchedGroupIndex = -1;
+                                      showingBarGroups = List.of(rawBarGroups);
+                                      return;
+                                    }
+                                    showingBarGroups = List.of(rawBarGroups);
+                                    if (touchedGroupIndex != -1) {
+                                      var sum = 0.0;
+                                      for (var rod
+                                          in showingBarGroups[touchedGroupIndex]
+                                              .barRods) {
+                                        sum += rod.y;
+                                      }
+                                      final avg = sum /
+                                          showingBarGroups[touchedGroupIndex]
+                                              .barRods
+                                              .length;
+
+                                      showingBarGroups[touchedGroupIndex] =
+                                          showingBarGroups[touchedGroupIndex]
+                                              .copyWith(
+                                        barRods:
+                                            showingBarGroups[touchedGroupIndex]
+                                                .barRods
+                                                .map((rod) {
+                                          return rod.copyWith(y: avg);
+                                        }).toList(),
+                                      );
+                                    }
+                                  });
+                                }),
+                            titlesData: FlTitlesData(
+                              show: true,
+                              rightTitles: SideTitles(showTitles: false),
+                              topTitles: SideTitles(showTitles: false),
+                              bottomTitles: SideTitles(
+                                showTitles: true,
+                                getTextStyles: (context, value) =>
+                                    const TextStyle(
+                                        color: Colors.white54,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14),
+                                margin: 10,
+                                getTitles: (double value) {
+                                  switch (value.toInt()) {
+                                    case 0:
+                                      return 'Mn';
+
+                                    case 1:
+                                      return 'Te';
+                                    case 2:
+                                      return 'Wd';
+                                    case 3:
+                                      return 'Tu';
+                                    case 4:
+                                      return 'Fr';
+                                    case 5:
+                                      return 'St';
+                                    case 6:
+                                      return 'Sn';
+                                    default:
+                                      return '';
+                                  }
+                                },
+                              ),
+                              leftTitles: SideTitles(
+                                showTitles: true,
+                                getTextStyles: (context, value) =>
+                                    const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14),
+                                margin: 8,
+                                reservedSize: 28,
+                                interval: 1,
+                                getTitles: (value) {
+                                  if (value == 0) {
+                                    return '1K';
+                                  } else if (value == 10) {
+                                    return '2K';
+                                  } else if (value == 10) {
+                                    return '3K';
+                                  } else if (value == 10) {
+                                    return '4K';
+                                  } else if (value == 19) {
+                                    return '5K';
+                                  } else {
+                                    return '';
+                                  }
+                                },
+                              ),
+                            ),
+                            borderData: FlBorderData(
+                              show: false,
+                            ),
+                            barGroups: showingBarGroups,
+                            gridData: FlGridData(show: false),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 30,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //mainAxisAlignment: MainAxisAlignment.center,
+                      //   crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 100,
+                          width: 100,
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(13)),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  'Balance',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black),
+                                ),
+                                SizedBox(
+                                  height: 15,
+                                ),
+                                Text(
+                                  '500 RS',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 100,
+                          width: 100,
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(13)),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  'Orders',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black),
+                                ),
+                                Text(
+                                  'Completed',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  '25',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 100,
+                          width: 100,
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(13)),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  'Orders',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black),
+                                ),
+                                Text(
+                                  'Active',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  '25',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //mainAxisAlignment: MainAxisAlignment.center,
+                      //   crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 100,
+                          width: 100,
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(13)),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  'Orders',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black),
+                                ),
+                                Text(
+                                  'Cancelled',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  '3',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 100,
+                          width: 100,
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(13)),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  'Products',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black),
+                                ),
+                                Text(
+                                  'Avaliable',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  '350',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 100,
+                          width: 100,
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(13)),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  'Ratings',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black),
+                                ),
+
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  '4.5',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                      ],
+                    ),
+                    // Row(
+                    //   children: [
+                    //     Expanded(
+                    //       flex: 2,
+                    //       child: Container(
+                    //         child: circularProgressWithTitle(
+                    //             filledPercentText: 97,
+                    //             titleText: 'Response \n Rate'),
+                    //       ),
+                    //     ),
+                    //     Expanded(
+                    //       flex: 2,
+                    //       child: circularProgressWithTitle(
+                    //           filledPercentText: 75,
+                    //           titleText: 'Order \n completion'),
+                    //     ),
+                    //     Expanded(
+                    //       flex: 2,
+                    //       child: circularProgressWithTitle(
+                    //           filledPercentText: 75,
+                    //           titleText: 'On-time \n delivery'),
+                    //     ),
+                    //     Expanded(
+                    //       flex: 2,
+                    //       child: circularProgressWithTitle(
+                    //           filledPercentText: 75,
+                    //           titleText: 'Positive \n Rating'),
+                    //     ),
+                    //   ],
+                    // ),
+
                   ],
                 ),
               ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 14),
-                child: rowTxt(
-                    leftTxt: 'Earnings',
-                    rightTxt: 'Details',
-                    leftTxtClr: Colors.black,
-                    rightTxtClr: MyAppColors.blackcolor,
-                    leftTxtSize: 20),
-              ),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12),
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        spreadRadius: .4,
-                        blurRadius: 9,
-                        offset:
-                            const Offset(0, 0), //// changes position of shadow
-                      )
-                    ]),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: columnTxt(
-                                upperTxt: 'Personal balance',
-                                lowerTxt: '9.60',
-                                lowerTxtClr: MyAppColors.blackcolor),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: columnTxt(
-                              upperTxt: 'Average selling price',
-                              lowerTxt: '37.60',
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: columnTxt(
-                              upperTxt: 'Pending clearance',
-                              lowerTxt: '35.60',
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: columnTxt(
-                              upperTxt: 'Earning in March',
-                              lowerTxt: '38.60',
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: columnTxt(
-                                upperTxt: 'Active orders',
-                                lowerTxt: '250.60 (1)',
-                                lowerTxtClr: MyAppColors.blackcolor),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: columnTxt(
-                              upperTxt: 'Cancel orders',
-                              lowerTxt: '0.00 (0)',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 40)
+
+
+
             ],
           ),
         ));
+  }
+
+  BarChartGroupData makeGroupData(int x, double y1, double y2) {
+    return BarChartGroupData(barsSpace: 4, x: x, barRods: [
+      BarChartRodData(
+        y: y1,
+        colors: [leftBarColor],
+        width: width,
+      ),
+      BarChartRodData(
+        y: y2,
+        colors: [rightBarColor],
+        width: width,
+      ),
+    ]);
+  }
+
+  Widget makeTransactionsIcon() {
+    const width = 4.5;
+    const space = 3.5;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Container(
+          width: width,
+          height: 10,
+          color: Colors.white.withOpacity(0.4),
+        ),
+        const SizedBox(
+          width: space,
+        ),
+        Container(
+          width: width,
+          height: 28,
+          color: Colors.white.withOpacity(0.8),
+        ),
+        const SizedBox(
+          width: space,
+        ),
+        Container(
+          width: width,
+          height: 42,
+          color: Colors.white.withOpacity(1),
+        ),
+        const SizedBox(
+          width: space,
+        ),
+        Container(
+          width: width,
+          height: 28,
+          color: Colors.white.withOpacity(0.8),
+        ),
+        const SizedBox(
+          width: space,
+        ),
+        Container(
+          width: width,
+          height: 10,
+          color: Colors.white.withOpacity(0.4),
+        ),
+      ],
+    );
   }
 }
 

@@ -2,15 +2,17 @@
 
 import 'dart:io';
 
-
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:loading_overlay/loading_overlay.dart';
+import 'package:rental_shop_app/Helpers/helper.dart';
 
 import '../../../Models/user_model.dart';
 import '../../../Services/auth_services.dart';
@@ -39,6 +41,10 @@ class _CreateAccountState extends State<CreateAccount> {
   TextEditingController _fullNameController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
+  TextEditingController _phoneNumberController = TextEditingController();
+  TextEditingController _addressController = TextEditingController();
+  File? _image;
+
   File? _file;
   bool isChecked = false;
 
@@ -122,16 +128,14 @@ class _CreateAccountState extends State<CreateAccount> {
                       Container(
                         height: 120,
                         width: 120,
-                        child: Padding(
-                          padding: const EdgeInsets.all(33.0),
-                          child: SvgPicture.asset(
-                            Res.personicon,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
                         decoration: BoxDecoration(
-                          color: MyAppColors.bgtextfieldcolor,
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(24),
+                          image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: _image == null
+                                ? AssetImage(Res.addusersmall)
+                                : FileImage(_image!) as ImageProvider,
+                          ),
                         ),
                       ),
                       Positioned.fill(
@@ -143,7 +147,7 @@ class _CreateAccountState extends State<CreateAccount> {
                             width: 40,
                             child: GestureDetector(
                                 onTap: () {
-                                  //  getFile();
+                                  getImage(true);
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
@@ -210,7 +214,7 @@ class _CreateAccountState extends State<CreateAccount> {
                       maxlength: 20,
                       showpassoricon: false,
                       keyboardtype: TextInputType.text,
-                      authcontroller: _fullNameController,
+                      authcontroller: _phoneNumberController,
                       showImage: false,
                       showsuffix: false,
                       suffixImage: Res.personicon,
@@ -273,7 +277,7 @@ class _CreateAccountState extends State<CreateAccount> {
                       maxlength: 20,
                       showpassoricon: false,
                       keyboardtype: TextInputType.text,
-                      authcontroller: _fullNameController,
+                      authcontroller: _addressController,
                       showImage: false,
                       showsuffix: false,
                       suffixImage: Res.personicon,
@@ -462,13 +466,19 @@ class _CreateAccountState extends State<CreateAccount> {
           .registerUser(
               email: _emailController.text, password: _passwordController.text)
           .then((value) {
-        userServices.createUser(UserModel(
-          fullName: _fullNameController.text,
-          userEmail: _emailController.text,
-          //   isapprove: false,
-          //    password: _passwordController.text,
-        //    userID: getUserID()
-        ));
+        getUrl(context, file: _image).then((imgUrl) {
+          userServices.createUser(UserModel(
+            fullName: _fullNameController.text,
+            userEmail: _emailController.text,
+            PhoneNumber: _phoneNumberController.text,
+            userID: getUserID(),
+            userImage: imgUrl,
+
+            //   isapprove: false,
+            //    password: _passwordController.text,
+            //    userID: getUserID()
+          ));
+        });
         makeLoadingFalse();
       }).then((value) {
         Navigator.pushReplacement(
@@ -498,6 +508,53 @@ class _CreateAccountState extends State<CreateAccount> {
         },
       );
     }
+  }
+
+  Future<String> getUrl(BuildContext context, {File? file}) async {
+    String postFileUrl = "";
+    try {
+      Reference storageReference = FirebaseStorage.instance
+          .ref()
+          .child('backendClass/${file!.path.split('/').last}');
+      UploadTask uploadTask = storageReference.putFile(file);
+
+      await uploadTask.whenComplete(() async {
+        await storageReference.getDownloadURL().then((fileURL) {
+          print("I am fileUrl $fileURL");
+          postFileUrl = fileURL;
+        });
+      });
+    } catch (e) {
+      rethrow;
+    }
+
+    return postFileUrl.toString();
+  }
+
+  Future getImage(bool gallery) async {
+    ImagePicker picker = ImagePicker();
+
+    PickedFile? pickedFile;
+    // Let user select photo from gallery
+    if (gallery) {
+      pickedFile = await picker.getImage(
+        source: ImageSource.gallery,
+      );
+    }
+    // Otherwise open camera to get new photo
+    else {
+      pickedFile = await picker.getImage(
+        source: ImageSource.camera,
+      );
+    }
+
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
   }
 }
 

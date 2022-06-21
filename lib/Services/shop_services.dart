@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rental_shop_app/Helpers/helper.dart';
 import 'package:rental_shop_app/Models/add_shop_model.dart';
 
 import '../Models/user_model.dart';
@@ -8,9 +9,8 @@ import '../Models/user_model.dart';
 class AddShopServices {
   ///Create Shop
   Future createShop(AddShopModel addShopModel) async {
-    DocumentReference docRef = FirebaseFirestore.instance
-        .collection("ShopCollection")
-        .doc();
+    DocumentReference docRef =
+        FirebaseFirestore.instance.collection("ShopCollection").doc();
     return await docRef.set(addShopModel.toJson(docRef.id));
   }
 
@@ -19,6 +19,7 @@ class AddShopServices {
   Stream<List<AddShopModel>> streamShops() {
     return FirebaseFirestore.instance
         .collection('ShopCollection')
+        .where("userID", isEqualTo: getUserID())
         .snapshots()
         .map((list) => list.docs
             .map((singleDoc) => AddShopModel.fromJson(singleDoc.data()))
@@ -52,7 +53,7 @@ class AddShopServices {
         .collection('ShopCollection')
         .doc(addShopModel.shopID)
         .update({
-      'shopImage': addShopModel.shopImage,
+      // 'shopImage': addShopModel.shopImage,
       'shopName': addShopModel.shopName,
       'shopDescription': addShopModel.shopDescription
     });

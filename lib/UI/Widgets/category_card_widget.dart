@@ -9,29 +9,37 @@ import 'package:rental_shop_app/UI/Widgets/shop_delete_confirm.dart';
 import '../../Utils/Colors.dart';
 import '../../Utils/res.dart';
 import '../Screens/AddSection/catgories_view_screen.dart';
+import '../Screens/AddSection/edit_categories_Screen.dart';
 import '../Screens/AddSection/edit_shop_screen.dart';
+import '../Screens/AddSection/product_view_screen.dart';
+import 'category_delete_confirm.dart';
 
-class ShopsCardWidget extends StatefulWidget {
-  final String shopName;
-  final String shopImage;
-  final String shopDescription;
+class CategoryCardWidget extends StatefulWidget {
+  final String categoryName;
+  final String cagoryImage;
+  final String categoryID;
   final String shopID;
 
-  ShopsCardWidget(
-      this.shopName, this.shopImage, this.shopDescription, this.shopID);
+  // final String shopID;
+
+  CategoryCardWidget(
+      this.categoryName, this.cagoryImage, this.categoryID, this.shopID
+
+      // this.shopID
+      );
 
   @override
-  State<ShopsCardWidget> createState() => _ShopsCardWidgetState();
+  State<CategoryCardWidget> createState() => _CategoryCardWidgetState();
 }
 
-class _ShopsCardWidgetState extends State<ShopsCardWidget> {
+class _CategoryCardWidgetState extends State<CategoryCardWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: InkWell(
         onTap: () {
-          Get.to(CategoryView(widget.shopID));
+          Get.to(ProductViewScreen(widget.categoryID,widget.shopID));
         },
         child: Container(
           height: 120,
@@ -64,7 +72,7 @@ class _ShopsCardWidgetState extends State<ShopsCardWidget> {
                                           fit: BoxFit.cover),
                                     ),
                                   ),
-                              imageUrl: widget.shopImage,
+                              imageUrl: widget.cagoryImage,
                               fit: BoxFit.cover,
                               progressIndicatorBuilder:
                                   (context, url, downloadProgress) =>
@@ -79,7 +87,7 @@ class _ShopsCardWidgetState extends State<ShopsCardWidget> {
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(widget.shopName,
+                              Text(widget.categoryName,
                                   style: GoogleFonts.roboto(
                                       // fontFamily: 'Gilroy',
                                       fontWeight: FontWeight.w700,
@@ -95,8 +103,11 @@ class _ShopsCardWidgetState extends State<ShopsCardWidget> {
                         children: [
                           IconButton(
                               onPressed: () {
-                                Get.to(EditShopScreen(widget.shopName, widget.shopImage,
-                                    widget.shopDescription, widget.shopID));
+                                Get.to(EditCategories(
+                                    widget.categoryName,
+                                    widget.cagoryImage,
+                                    widget.categoryID,
+                                    widget.shopID));
                               },
                               icon: Icon(
                                 Icons.edit,
@@ -107,7 +118,8 @@ class _ShopsCardWidgetState extends State<ShopsCardWidget> {
                                 showDialog(
                                     context: context,
                                     builder: (BuildContext context) {
-                                      return ShopDeleteConfirmDialog(widget.shopID
+                                      return CategoryDeleteConfirmWidget(
+                                          widget.categoryID
                                           //widget.contactId
 
                                           );
@@ -123,16 +135,6 @@ class _ShopsCardWidgetState extends State<ShopsCardWidget> {
                   ),
                   SizedBox(
                     height: 8,
-                  ),
-                  RichText(
-                    textAlign: TextAlign.start,
-                    text: TextSpan(
-                        style: GoogleFonts.roboto(
-                            //fontFamily: 'Gilroy',
-                            color: MyAppColors.blackcolor,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14),
-                        text: widget.shopDescription),
                   ),
                   SizedBox(
                     height: 3,

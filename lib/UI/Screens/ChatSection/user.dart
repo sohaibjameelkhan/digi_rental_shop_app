@@ -8,7 +8,7 @@ class ExpertServices {
   Stream<UserModel> getUserDetails(String docID) {
 
     return FirebaseFirestore.instance
-        .collection('expertsCollection')
+        .collection('userCollection')
         .doc(docID)
         .snapshots()
         .map((event) =>

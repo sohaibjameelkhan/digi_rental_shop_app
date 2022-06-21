@@ -1,38 +1,77 @@
 // ignore_for_file: prefer_const_constructors, sized_box_for_whitespace
 
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:rental_shop_app/Models/product_Model.dart';
 import 'package:rental_shop_app/Utils/Colors.dart';
 
+import '../../../Services/product_services.dart';
 import '../../../Utils/res.dart';
 import '../../../Utils/res.dart';
+import '../../Widgets/product_card_widget.dart';
 import '../../Widgets/product_delete_confirm.dart';
 import 'add_categories.dart';
 import 'add_product_screen.dart';
 import 'edit_product_screen.dart';
 
 class ProductViewScreen extends StatefulWidget {
-  const ProductViewScreen(
-      {Key? key,
-      menuScreenContext,
-      bool? hideStatus,
-      Null Function()? onScreenHideButtonPressed})
-      : super(key: key);
+  final String CatgoryID;
+  final String ShopID;
+
+  ProductViewScreen(this.CatgoryID,this.ShopID);
 
   @override
   State<ProductViewScreen> createState() => _ProductViewScreenState();
 }
 
 class _ProductViewScreenState extends State<ProductViewScreen> {
+  ProductServices _productServices = ProductServices();
+  TextEditingController _searchController = TextEditingController();
+  List<ProductModel> searchedContact = [];
+
+  List<ProductModel> contactList = [];
+
+  bool isSearchingAllow = false;
+  bool isSearched = false;
+  List<ProductModel> contactListDB = [];
+
+  void _searchedContacts(String val) async {
+    print(contactListDB.length);
+    searchedContact.clear();
+    for (var i in contactListDB) {
+      var lowerCaseString = i.productName.toString().toLowerCase() +
+          " " +
+          i.productName.toString().toLowerCase() +
+          i.productName.toString();
+
+      var defaultCase = i.productName.toString() +
+          " " +
+          i.productName.toString() +
+          i.productName.toString();
+
+      if (lowerCaseString.contains(val) || defaultCase.contains(val)) {
+        searchedContact.add(i);
+      } else {
+        setState(() {
+          isSearched = true;
+        });
+      }
+    }
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         backgroundColor: MyAppColors.appColor,
         onPressed: () {
-          Get.to(AddProduct());
+          Get.to(AddProduct(widget.CatgoryID,widget.ShopID));
         },
         child: Icon(Icons.add),
       ),
@@ -81,129 +120,125 @@ class _ProductViewScreenState extends State<ProductViewScreen> {
                 ],
               ),
             ),
-            ListView.builder(
-                shrinkWrap: true,
-                // scrollDirection: Axis.horizontal,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 8,
-                itemBuilder: (_, i) {
-                  return Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    child: Container(
-                      height: 130,
-                      width: double.infinity,
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(13)),
-                        elevation: 4,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        height: 50,
-                                        width: 50,
-                                        child: SvgPicture.asset(
-                                            Res.invitefriendbanner),
-                                      ),
-                                      SizedBox(
-                                        width: 15,
-                                      ),
-                                      Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text("Dslr",
-                                              style: GoogleFonts.roboto(
-                                                  // fontFamily: 'Gilroy',
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 20)),
-                                          SizedBox(
-                                            height: 3,
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      IconButton(
-                                          onPressed: () {
-                                            Get.to(EditProductScreen());
-                                          },
-                                          icon: Icon(
-                                            Icons.edit,
-                                            color: MyAppColors.appColor,
-                                          )),
-                                      IconButton(
-                                          onPressed: () {
-                                            showDialog(
-                                                context: context,
-                                                builder:
-                                                    (BuildContext context) {
-                                                  return ProductDeleteConfirmDialog(
-                                                      //widget.contactId
+            SizedBox(
+              height: 20,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Container(
+                height: 45,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(13),
+                    color: MyAppColors.blackcolor.withOpacity(0.1)),
+                child: TextFormField(
+                  onChanged: (val) {
+                    _searchedContacts(val);
+                    setState(() {});
+                  },
+                  decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: "Search Products With Name",
+                      hintStyle: GoogleFonts.poppins(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13),
+                      prefixIcon: Icon(Icons.search)),
+                ),
+              ),
+            ),
+            StreamProvider.value(
+                value: _productServices.streamProducts(widget.CatgoryID),
+                initialData: [ProductModel()],
+                builder: (context, child) {
+                  contactListDB = context.watch<List<ProductModel>>();
+                  List<ProductModel> list = context.watch<List<ProductModel>>();
+                  return list.isEmpty
+                      ? Center(
+                          child: Padding(
+                          padding: const EdgeInsets.only(top: 100.0),
+                          child: Text("Add Products",
+                              style: GoogleFonts.poppins(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 20)),
+                        ))
+                      : list[0].productId == null
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 50.0),
+                                child: SpinKitWave(
+                                    color: Colors.blue,
+                                    type: SpinKitWaveType.start),
+                              ),
+                            )
+                          : list.isEmpty
+                              ? Center(child: Text("No Data"))
+                              : searchedContact.isEmpty
+                                  ? isSearched == true
+                                      ? Center(child: Text("NO Data"))
+                                      : Container(
+                                          // height: 550,
+                                          // width: MediaQuery.of(context).size.width,
 
-                                                      );
-                                                });
-                                          },
-                                          icon: Icon(
-                                            Icons.delete,
-                                            color: MyAppColors.redcolor,
-                                          ))
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 0),
-                                child: RichText(
-                                  textAlign: TextAlign.start,
-                                  text: TextSpan(
-                                      style: GoogleFonts.roboto(
-                                          //fontFamily: 'Gilroy',
-                                          color: MyAppColors.blackcolor,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14),
-                                      text:
-                                          "dictum id nulla. Risus ullamcorper sapien nibh eu nulla platea. Aliquam ipsum,"),
-                                ),
-                              ),
-                              SizedBox(
-                                height: 3,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 15),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Text("\$45",
-                                        style: GoogleFonts.roboto(
-                                            // fontFamily: 'Gilroy',
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 17)),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(
-                                height: 6,
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
+                                          child: ListView.builder(
+                                              itemCount: list.length,
+                                              shrinkWrap: true,
+                                              physics: BouncingScrollPhysics(),
+                                              itemBuilder: (context, i) {
+                                                return ProductCardWidget(
+                                                  list[i].productId.toString(),
+                                                  list[i].categoryId.toString(),
+                                                  list[i]
+                                                      .productName
+                                                      .toString(),
+                                                  list[i]
+                                                      .productPrice
+                                                      .toString(),
+                                                  list[i]
+                                                      .productDesc
+                                                      .toString(),
+                                                  list[i]
+                                                      .productquantity
+                                                      .toString(),
+                                                  list[i]
+                                                      .productImage
+                                                      .toString(),
+                                                );
+                                              }))
+                                  : Container(
+                                      // height: 550,
+                                      // width: MediaQuery.of(context).size.width,
+
+                                      child: ListView.builder(
+                                          itemCount: searchedContact.length,
+                                          shrinkWrap: true,
+                                          physics: BouncingScrollPhysics(),
+                                          itemBuilder: (context, i) {
+                                            return ProductCardWidget(
+                                              searchedContact[i]
+                                                  .productId
+                                                  .toString(),
+                                              searchedContact[i]
+                                                  .categoryId
+                                                  .toString(),
+                                              searchedContact[i]
+                                                  .productName
+                                                  .toString(),
+                                              searchedContact[i]
+                                                  .productPrice
+                                                  .toString(),
+                                              searchedContact[i]
+                                                  .productDesc
+                                                  .toString(),
+                                              searchedContact[i]
+                                                  .productquantity
+                                                  .toString(),
+                                              searchedContact[i]
+                                                  .productImage
+                                                  .toString(),
+                                            );
+                                          }));
                 })
           ],
         ),

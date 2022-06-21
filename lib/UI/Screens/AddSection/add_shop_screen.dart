@@ -44,6 +44,7 @@ class _AddShopScreenState extends State<AddShopScreen> {
     isLoading = false;
     setState(() {});
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,8 +101,8 @@ class _AddShopScreenState extends State<AddShopScreen> {
                           // ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(17),
-                            border:
-                                Border.all(width: 3, color: MyAppColors.appColor),
+                            border: Border.all(
+                                width: 3, color: MyAppColors.appColor),
                             //shape: BoxShape.circle,
 
                             image: DecorationImage(

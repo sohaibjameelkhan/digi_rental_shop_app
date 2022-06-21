@@ -2,16 +2,19 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_overlay/loading_overlay.dart';
+import 'package:rental_shop_app/Services/product_services.dart';
+import 'package:rental_shop_app/UI/Screens/AddSection/product_view_screen.dart';
 
 import '../../Utils/Colors.dart';
 import '../../Utils/res.dart';
 
 class ProductDeleteConfirmDialog extends StatefulWidget {
-  // final String contactID;
+  final String productID;
 
-  // DeleteContactDialog(this.contactID);
+  ProductDeleteConfirmDialog(this.productID);
 
   @override
   _ProductDeleteConfirmDialogState createState() =>
@@ -21,6 +24,7 @@ class ProductDeleteConfirmDialog extends StatefulWidget {
 class _ProductDeleteConfirmDialogState
     extends State<ProductDeleteConfirmDialog> {
   bool isLoading = false;
+  ProductServices _productServices = ProductServices();
 
   makeLoadingTrue() {
     isLoading = true;
@@ -92,19 +96,18 @@ class _ProductDeleteConfirmDialogState
                   ),
                   InkWell(
                     onTap: () {
-                      // showDialog(
-                      //     context: context,
-                      //     barrierDismissible: false,
-                      //     builder: (BuildContext context) {
-                      //       return SpinKitWave(
-                      //           color: MyAppColors.appColor,
-                      //           type: SpinKitWaveType.start);
-                      //     });
+                      showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            return SpinKitWave(
+                                color: MyAppColors.appColor,
+                                type: SpinKitWaveType.start);
+                          });
 
-                      // _contactServices
-                      //     .deleteContact(widget.contactID)
-                      //     .whenComplete(() => NavigationHelper.pushRoute(
-                      //     context, HomeScreen()));
+                      _productServices
+                          .deleteProduct(widget.productID)
+                          .whenComplete(() => Navigator.pop(context));
                     },
                     child: Text("Delete",
                         style: GoogleFonts.poppins(
